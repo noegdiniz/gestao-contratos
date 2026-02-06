@@ -4,10 +4,17 @@ from sqlalchemy.orm import sessionmaker, relationship
 import datetime
 from sqlalchemy.sql import func
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./gestao-contratos.db"
+import os
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./gestao-contratos.db")
+
+# Adjust for SQLAlchemy 2.0+ and Postgres vs SQLite
+connect_args = {}
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args=connect_args
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

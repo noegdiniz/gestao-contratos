@@ -44,6 +44,7 @@ import {
     verticalListSortingStrategy,
     useSortable,
     horizontalListSortingStrategy,
+    rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -84,44 +85,45 @@ const FIELD_CATALOG = [
 
 // --- DnD Components ---
 
-function SortableItem(props: {
+function ColumnCard({
+    id,
+    onRemove,
+    filter,
+    onFilterChange,
+    isDragging,
+    isOverlay,
+    listeners,
+    attributes
+}: {
     id: string,
     onRemove?: () => void,
     filter?: { operator: string, value: string },
-    onFilterChange?: (filter: { operator: string, value: string } | null) => void
+    onFilterChange?: (filter: { operator: string, value: string } | null) => void,
+    isDragging?: boolean,
+    isOverlay?: boolean,
+    listeners?: any,
+    attributes?: any
 }) {
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging
-    } = useSortable({ id: props.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        zIndex: isDragging ? 10 : 0,
-        opacity: isDragging ? 0.5 : 1
-    };
-
     return (
         <div
-            ref={setNodeRef}
-            style={style}
-            className={`flex items-center justify-between bg-white border border-gray-100 p-3 rounded-xl shadow-sm group relative ${isDragging ? 'ring-2 ring-indigo-500 shadow-xl' : ''}`}
+            className={`flex items-center justify-between bg-white border p-3 rounded-xl shadow-sm group relative transition-all duration-200 
+                ${isDragging ? 'opacity-30 border-gray-100' : 'opacity-100 border-gray-100'} 
+                ${isOverlay ? 'shadow-2xl ring-2 ring-indigo-500 scale-105 cursor-grabbing z-[1000] border-indigo-200' : 'hover:shadow-md hover:border-gray-200'}`}
         >
             <div className="flex items-center space-x-3 overflow-hidden">
-                <button {...attributes} {...listeners} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing shrink-0">
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className={`text-gray-300 hover:text-gray-500 shrink-0 ${isOverlay ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'}`}
+                >
                     <GripVertical size={16} />
                 </button>
-                <span className="text-sm font-bold text-gray-700 truncate">{props.id}</span>
-                {props.filter?.value && (
+                <span className="text-sm font-bold text-gray-700 truncate">{id}</span>
+                {filter?.value && (
                     <div className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase truncate max-w-[80px]">
-                        {props.filter.operator}: {props.filter.value}
+                        {filter.operator}: {filter.value}
                     </div>
                 )}
             </div>
@@ -129,14 +131,14 @@ function SortableItem(props: {
             <div className="flex items-center space-x-1 shrink-0">
                 <button
                     onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-                    className={`p-1.5 rounded-lg transition-colors ${props.filter?.value ? 'text-indigo-600 bg-indigo-50' : 'text-gray-300 hover:bg-gray-50 hover:text-gray-500'}`}
+                    className={`p-1.5 rounded-lg transition-colors ${filter?.value ? 'text-indigo-600 bg-indigo-50' : 'text-gray-300 hover:bg-gray-50 hover:text-gray-500'}`}
                     title="Configurar Filtro"
                 >
                     <Search size={14} />
                 </button>
 
-                {props.onRemove && (
-                    <button onClick={props.onRemove} className="p-1.5 text-gray-300 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors">
+                {onRemove && (
+                    <button onClick={onRemove} className="p-1.5 text-gray-300 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors">
                         <X size={14} />
                     </button>
                 )}
@@ -150,11 +152,11 @@ function SortableItem(props: {
                             <button onClick={() => setIsPopoverOpen(false)}><X size={12} className="text-gray-400" /></button>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 text-left">
                             <select
                                 className="w-full text-xs p-2 bg-gray-50 border border-gray-100 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 font-bold"
-                                value={props.filter?.operator || 'igual'}
-                                onChange={(e) => props.onFilterChange?.({ operator: e.target.value, value: props.filter?.value || '' })}
+                                value={filter?.operator || 'igual'}
+                                onChange={(e) => onFilterChange?.({ operator: e.target.value, value: filter?.value || '' })}
                             >
                                 <option value="igual">Igual a</option>
                                 <option value="contem">Contém</option>
@@ -170,14 +172,14 @@ function SortableItem(props: {
                                     'Status do Documento': ['APROVADO', 'REPROVADO', 'PENDENTE', 'AGUARDANDO', 'NAO_APROVADO'],
                                     'Status Contrato': ['ATIVO', 'INATIVO', 'VENCIDO']
                                 };
-                                const options = statusOptions[props.id];
+                                const options = statusOptions[id];
 
                                 if (options) {
                                     return (
                                         <select
                                             className="w-full text-xs p-2 bg-gray-50 border border-gray-100 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
-                                            value={props.filter?.value || ''}
-                                            onChange={(e) => props.onFilterChange?.({ operator: props.filter?.operator || 'igual', value: e.target.value })}
+                                            value={filter?.value || ''}
+                                            onChange={(e) => onFilterChange?.({ operator: filter?.operator || 'igual', value: e.target.value })}
                                         >
                                             <option value="">Selecione...</option>
                                             {options.map(opt => (
@@ -191,16 +193,16 @@ function SortableItem(props: {
                                         type="text"
                                         placeholder="Valor do filtro..."
                                         className="w-full text-xs p-2 bg-gray-50 border border-gray-100 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
-                                        value={props.filter?.value || ''}
-                                        onChange={(e) => props.onFilterChange?.({ operator: props.filter?.operator || 'igual', value: e.target.value })}
+                                        value={filter?.value || ''}
+                                        onChange={(e) => onFilterChange?.({ operator: filter?.operator || 'igual', value: e.target.value })}
                                     />
                                 );
                             })()}
                         </div>
 
-                        {props.filter?.value && (
+                        {filter?.value && (
                             <button
-                                onClick={() => props.onFilterChange?.(null)}
+                                onClick={() => onFilterChange?.(null)}
                                 className="w-full text-[10px] font-bold text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
                             >
                                 Limpar Filtro
@@ -209,6 +211,38 @@ function SortableItem(props: {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+function SortableItem(props: {
+    id: string,
+    onRemove?: () => void,
+    filter?: { operator: string, value: string },
+    onFilterChange: (filter: { operator: string, value: string } | null) => void
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: props.id });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style}>
+            <ColumnCard
+                {...props}
+                isDragging={isDragging}
+                listeners={listeners}
+                attributes={attributes}
+            />
         </div>
     );
 }
@@ -255,6 +289,8 @@ export default function RelatoriosPage() {
     const [columnFilters, setColumnFilters] = useState<Record<string, { operator: string, value: string }>>({});
     const [searchTerm, setSearchTerm] = useState('');
     const [isGeneratingCubo, setIsGeneratingCubo] = useState(false);
+
+    const [activeId, setActiveId] = useState<string | null>(null);
 
     // Snapshot States
     const [isSaveSnapshotOpen, setIsSaveSnapshotOpen] = useState(false);
@@ -347,23 +383,32 @@ export default function RelatoriosPage() {
 
     // Sensors for DnD
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
 
-    const handleDragEnd = (event: any) => {
-        const { active, over } = event;
+    function handleDragStart(event: any) {
+        setActiveId(event.active.id);
+    }
 
-        if (over && active.id !== over.id) {
+    function handleDragEnd(event: any) {
+        const { active, over } = event;
+        setActiveId(null);
+
+        if (active.id !== over?.id) {
             setSelectedColumns((items) => {
                 const oldIndex = items.indexOf(active.id);
                 const newIndex = items.indexOf(over.id);
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
-    };
+    }
 
     const addColumn = (fieldId: string) => {
         if (!selectedColumns.includes(fieldId)) {
@@ -705,9 +750,14 @@ export default function RelatoriosPage() {
                                     <span>Colunas do Relatório (Arraste para reordenar)</span>
                                 </h3>
 
-                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        <SortableContext items={selectedColumns} strategy={verticalListSortingStrategy}>
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-h-[100px] relative transition-all duration-300">
+                                        <SortableContext items={selectedColumns} strategy={rectSortingStrategy}>
                                             {selectedColumns.map(id => (
                                                 <SortableItem
                                                     key={id}
@@ -731,6 +781,25 @@ export default function RelatoriosPage() {
                                             ))}
                                         </SortableContext>
                                     </div>
+
+                                    <DragOverlay dropAnimation={{
+                                        sideEffects: defaultDropAnimationSideEffects({
+                                            styles: {
+                                                active: {
+                                                    opacity: '0.4',
+                                                },
+                                            },
+                                        }),
+                                    }}>
+                                        {activeId ? (
+                                            <ColumnCard
+                                                id={activeId}
+                                                filter={columnFilters[activeId]}
+                                                isOverlay
+                                            />
+                                        ) : null}
+                                    </DragOverlay>
+
                                     {selectedColumns.length === 0 && (
                                         <div className="h-32 border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-3xl flex items-center justify-center text-gray-400 text-sm italic font-medium">
                                             Nenhuma coluna selecionada. Adicione campos da lista à esquerda.

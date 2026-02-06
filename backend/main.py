@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form, Body, Response, Request
 from sqlalchemy.orm import Session
 import models
@@ -23,7 +24,7 @@ app = FastAPI(title="Gestão de Contratos API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

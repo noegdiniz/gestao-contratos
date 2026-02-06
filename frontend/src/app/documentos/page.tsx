@@ -556,13 +556,14 @@ function DocumentosList() {
 
 function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId: number }) {
     const [selectedContratoId, setSelectedContratoId] = useState<number | null>(null);
+    const [competencia, setCompetencia] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
     const { data: contracts } = useQuery({
         queryKey: ['contratos', 'empresa', empresaId],
         queryFn: async () => {
-            const resp = await api.get('/contratos');
+            const resp = await contratoService.getAll(1, 1000); // Pegar todos os contratos para o select
             return resp.data.filter((c: any) => c.empresaId === empresaId);
         },
         enabled: !!empresaId
@@ -574,10 +575,11 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
         enabled: !!selectedContratoId
     });
 
-    const { data: allDocs } = useQuery({
+    const { data: allDocsResponse } = useQuery({
         queryKey: ['documentos'],
-        queryFn: () => documentoService.getAll()
+        queryFn: () => documentoService.getAll(1, 1000)
     });
+    const allDocs = allDocsResponse?.data || [];
 
     const uploadMutation = useMutation({
         mutationFn: async ({ titulo, file, contratoId }: { titulo: string, file: File, contratoId: number }) => {
@@ -592,7 +594,7 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
             formData.append('contratoNome', contrato?.nome || '');
             formData.append('categoriaId', contrato?.categoriaId?.toString() || '');
             formData.append('categoriaNome', contrato?.categoriaNome || '');
-            formData.append('competencia', new Date().toISOString().slice(0, 7)); // Ex: 2024-05
+            formData.append('competencia', competencia);
             formData.append('email', 'portal@sistema.com');
 
             return api.post('/documentos', formData);
@@ -616,25 +618,41 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
             <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">Documentação Acessória</h2>
-                        <p className="text-sm text-gray-500">Envio de documentos conforme categoria do contrato.</p>
+                        <h2 className="text-xl font-bold text-gray-900 leading-tight flex items-center">
+                            <LayoutGrid className="mr-3 text-indigo-600" size={24} />
+                            Documentação Acessória
+                        </h2>
+                        <p className="text-sm text-gray-500">Envie documentos conforme categoria do contrato e competência.</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-all">
+                        <X size={24} />
+                    </button>
                 </div>
 
                 <div className="p-6 overflow-y-auto space-y-6">
-                    <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                        <label className="block text-sm font-bold text-indigo-900 mb-2">Selecione o Contrato para carregar as exigências:</label>
-                        <select
-                            value={selectedContratoId || ''}
-                            onChange={e => setSelectedContratoId(Number(e.target.value))}
-                            className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                        >
-                            <option value="">Selecione um contrato...</option>
-                            {contracts?.map((c: any) => (
-                                <option key={c.id} value={c.id}>{c.nome} - {c.categoriaNome || 'Sem Categoria'}</option>
-                            ))}
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100">
+                        <div className="md:col-span-2">
+                            <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">1. Selecione o Contrato</label>
+                            <select
+                                value={selectedContratoId || ''}
+                                onChange={e => setSelectedContratoId(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-gray-700"
+                            >
+                                <option value="">Selecione um contrato...</option>
+                                {contracts?.map((c: any) => (
+                                    <option key={c.id} value={c.id}>{c.nome} - {c.categoriaNome || 'Sem Categoria'}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">2. Competência</label>
+                            <input
+                                type="month"
+                                value={competencia}
+                                onChange={e => setCompetencia(e.target.value)}
+                                className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-gray-700"
+                            />
+                        </div>
                     </div>
 
                     {!selectedContratoId ? (
@@ -655,14 +673,23 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
                                     <p className="text-gray-500">Este contrato não possui documentos exigidos para sua categoria.</p>
                                 </div>
                             ) : exigidos?.map((docTitle: string) => {
-                                const existDoc = allDocs?.find((d: any) => d.titulo === docTitle && d.contratoId === selectedContratoId);
+                                const existDoc = (allDocs as any[]).find((d: any) =>
+                                    d.titulo === docTitle &&
+                                    d.contratoId === selectedContratoId
+                                );
                                 const isUploading = uploadingDoc === docTitle;
 
                                 return (
-                                    <div key={docTitle} className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-indigo-100 transition-all group flex flex-col justify-between">
+                                    <div key={docTitle} className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-indigo-100 transition-all group flex flex-col justify-between relative overflow-hidden">
+                                        {existDoc?.status === 'APROVADO' && (
+                                            <div className="absolute -top-1 -right-1 p-1.5 bg-emerald-500 text-white rounded-bl-xl">
+                                                <CheckCircle size={12} />
+                                            </div>
+                                        )}
+
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="flex items-center space-x-3">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${existDoc?.status === 'APROVADO' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 ${existDoc?.status === 'APROVADO' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'}`}>
                                                     <FileText size={20} />
                                                 </div>
                                                 <div className="text-left">
@@ -671,8 +698,8 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
                                                 </div>
                                             </div>
                                             {existDoc && (
-                                                <div className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${existDoc.status === 'APROVADO' ? 'bg-emerald-100 text-emerald-700' :
-                                                    existDoc.status === 'NAO_APROVADO' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                                <div className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${existDoc.status === 'APROVADO' ? 'bg-emerald-100 text-emerald-700' :
+                                                    existDoc.status === 'NAO_APROVADO' || existDoc.status === 'REPROVADO' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                                                     }`}>
                                                     {existDoc.status}
                                                 </div>
@@ -684,7 +711,7 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
                                                 existDoc?.status === 'APROVADO' ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100'
                                                 }`}>
                                                 {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                                                <span>{isUploading ? 'Enviando...' : existDoc ? 'Substituir Arquivo' : 'Enviar Documento'}</span>
+                                                <span>{isUploading ? 'Enviando...' : existDoc ? 'Substituir' : 'Enviar'}</span>
                                                 <input
                                                     type="file"
                                                     className="hidden"
@@ -695,9 +722,9 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
 
                                             {existDoc?.uploaded && (
                                                 <button
-                                                    disabled
-                                                    className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:text-indigo-600 transition-all"
-                                                    title="Ver atual"
+                                                    onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/documentos/${existDoc.id}/download`, '_blank')}
+                                                    className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:text-indigo-600 hover:bg-indigo-100 transition-all border border-gray-100"
+                                                    title="Baixar arquivo atual"
                                                 >
                                                     <Download size={18} />
                                                 </button>
@@ -712,8 +739,8 @@ function AcessoriaModal({ onClose, empresaId }: { onClose: () => void, empresaId
 
                 <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0 flex justify-between items-center">
                     <div className="flex items-center space-x-2 text-gray-500">
-                        <AlertCircle size={16} />
-                        <span className="text-xs">Documentos enviados ficam aguardando validação do gestor.</span>
+                        <AlertCircle size={16} className="text-amber-500" />
+                        <span className="text-xs font-medium">Selecione o ano/mês correto antes de realizar o upload.</span>
                     </div>
                     <button onClick={onClose} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-100 transition-all shadow-sm">
                         Fechar Painel
