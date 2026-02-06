@@ -62,7 +62,7 @@ O projeto está totalmente dockerizado para facilitar o deploy e desenvolvimento
 
 1.  **Clone o repositório:**
     ```bash
-    git clone https://github.com/seu-usuario/gestao-contratos.git
+    git clone https://github.com/noegdiniz/gestao-contratos.git
     cd gestao-contratos
     ```
 
