@@ -236,7 +236,7 @@ export default function ConfiguracoesPage() {
                             <label className="text-sm font-bold text-gray-700 italic">Domínio de Login Interno (Google)</label>
                             <input
                                 type="text"
-                                placeholder="@amcel.com.br"
+                                placeholder="@seudominio.com"
                                 value={form.dominioInterno || ''}
                                 onChange={e => setForm({ ...form, dominioInterno: e.target.value })}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"

@@ -5,12 +5,19 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { KeyRound, Building2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
+import { useQuery } from '@tanstack/react-query';
+import { configuracaoService } from '@/services/configuracaoService';
 
 export default function LoginPage() {
     const [isInternal, setIsInternal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+
+    const { data: config } = useQuery({
+        queryKey: ['configuracao'],
+        queryFn: configuracaoService.get,
+    });
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
         setLoading(true);
@@ -89,7 +96,7 @@ export default function LoginPage() {
                         </div>
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100"></span></div>
-                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Apenas @amcel.com.br</span></div>
+                            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400">Apenas {config?.dominioInterno || '@seudominio.com'}</span></div>
                         </div>
                     </div>
                 ) : (
