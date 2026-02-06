@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { NotificationProvider } from '@/components/ui/Notification';
 import React, { useState } from 'react';
 
-const GOOGLE_CLIENT_ID = "13256348917-k29q8fpfoblkan04mfadpr8fe6vafkg6.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient());

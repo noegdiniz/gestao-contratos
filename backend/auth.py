@@ -13,8 +13,8 @@ from google.auth.transport import requests as google_requests
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET", "super-secret-key")
-GOOGLE_CLIENT_ID = "13256348917-k29q8fpfoblkan04mfadpr8fe6vafkg6.apps.googleusercontent.com"
+SECRET_KEY = os.getenv("JWT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
