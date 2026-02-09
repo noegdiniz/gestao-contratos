@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configService } from '@/services/configService';
-import { Tags, Plus, Search, FileJson, Trash2, X, Edit2 } from 'lucide-react';
+import { Tags, Plus, Trash2, X, Edit2 } from 'lucide-react';
 import { useState, KeyboardEvent } from 'react';
 import { useNotify } from '@/components/ui/Notification';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -116,7 +116,6 @@ export default function CategoriasPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const action = editingCategory ? 'atualizar' : 'criar';
         const title = editingCategory ? 'Atualizar Categoria' : 'Criar Categoria';
         const message = editingCategory
             ? `Deseja salvar as alterações na categoria "${formData.nome}"?`

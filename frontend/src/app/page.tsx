@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '@/services/dashboardService';
 import {
   Building2,
-  FileText,
   Users,
   AlertCircle,
   CheckCircle2,

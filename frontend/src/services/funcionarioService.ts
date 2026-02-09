@@ -25,6 +25,13 @@ export interface Funcionario {
     statusDocumentacao?: string;
 }
 
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    pages: number;
+}
+
 export interface DocumentoExigidoFuncionario {
     id: number;
     nome: string;
@@ -43,7 +50,7 @@ export interface AnexoFuncionario {
 export const funcionarioService = {
     // Modificado para suportar paginação
     getAll: async (page = 1, limit = 10, empresaId?: number, contratoId?: number) => {
-        const response = await api.get<{ data: Funcionario[], total: number, page: number, pages: number }>('/funcionarios', {
+        const response = await api.get<PaginatedResponse<Funcionario>>('/funcionarios', {
             params: { page, limit, empresa_id: empresaId, contrato_id: contratoId }
         });
         return response.data;
@@ -79,7 +86,7 @@ export const funcionarioService = {
     },
     // Anexos do Funcionário
     getAllAnexos: async (page = 1, limit = 10) => {
-        const response = await api.get<{ data: AnexoFuncionario[], total: number, page: number, pages: number }>('/funcionarios/documentos-todos', {
+        const response = await api.get<PaginatedResponse<AnexoFuncionario>>('/funcionarios/documentos-todos', {
             params: { page, limit }
         });
         return response.data;
@@ -134,6 +141,14 @@ export const funcionarioService = {
     },
     aprovar: async (funcId: number) => {
         const response = await api.post<Funcionario>(`/funcionarios/${funcId}/aprovar`);
+        return response.data;
+    },
+    aprovarIntegracaoManual: async (funcId: number, params: {
+        dataAso: string;
+        prazoAsoDias: number;
+        prazoIntegracaoDias: number;
+    }) => {
+        const response = await api.post<Funcionario>(`/funcionarios/${funcId}/aprovar-manual`, params);
         return response.data;
     },
     confirmarPresenca: async (funcId: number, params?: {

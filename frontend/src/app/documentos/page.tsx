@@ -2,9 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { documentoService, Documento } from '@/services/documentoService';
+import { documentoService, Documento, PaginatedResponse } from '@/services/documentoService';
 import { contratoService } from '@/services/contratoService';
-import { Search, FileText, CheckCircle, XCircle, Clock, Filter, Download, Trash2, Check, X, Users, LayoutGrid, Plus, Upload, Loader2, AlertCircle } from 'lucide-react';
+import { Search, FileText, CheckCircle, XCircle, Clock, Download, Trash2, Check, X, Users, LayoutGrid, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -81,7 +81,7 @@ function HistoryModal({ docId, titulo, onClose }: HistoryModalProps) {
                                         </div>
                                         {ap.obs && (
                                             <div className="mt-3 text-sm text-gray-600 bg-white/80 p-3 rounded-xl border border-gray-100/50 italic text-left">
-                                                "{ap.obs}"
+                                                &quot;{ap.obs}&quot;
                                             </div>
                                         )}
                                     </div>
@@ -104,6 +104,17 @@ function HistoryModal({ docId, titulo, onClose }: HistoryModalProps) {
             </div>
         </div>
     );
+}
+
+interface DocumentModalProps {
+    doc: Documento;
+    isEmpresa: boolean;
+    obs: string;
+    setObs: (val: string) => void;
+    onClose: () => void;
+    onStatusUpdate: (status: string) => void;
+    onJustificar: () => void;
+    onCorrigir: (file?: File) => void;
 }
 
 function DocumentModal({ doc, isEmpresa, obs, setObs, onClose, onStatusUpdate, onJustificar, onCorrigir }: DocumentModalProps) {
@@ -230,7 +241,6 @@ function DocumentosList() {
     const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
     const [obs, setObs] = useState('');
     const [isAcessoriaModalOpen, setIsAcessoriaModalOpen] = useState(false);
-    const [selectedAcessoriaContrato, setSelectedAcessoriaContrato] = useState<number | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [docToDelete, setDocToDelete] = useState<number | null>(null);
 
@@ -252,10 +262,10 @@ function DocumentosList() {
 
     const isEmpresa = userData?.type === 'empresa';
 
-    const { data: documentsData, isLoading } = useQuery({
+    const { data: documentsData, isLoading } = useQuery<PaginatedResponse<Documento>>({
         queryKey: ['documentos', page, limit],
         queryFn: () => documentoService.getAll(page, limit),
-        keepPreviousData: true
+        placeholderData: (previousData: PaginatedResponse<Documento> | undefined) => previousData
     });
 
     const documents = documentsData?.data || [];
@@ -349,7 +359,7 @@ function DocumentosList() {
         }
     };
 
-    const filteredDocs = documents?.filter(doc => {
+    const filteredDocs = documents?.filter((doc: Documento) => {
         const matchesSearch = doc.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
             doc.empresaNome.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'ALL' || doc.status === statusFilter;

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configService } from '@/services/configService';
 import { contratoService } from '@/services/contratoService';
-import { Plus, Trash2, FileText, ChevronLeft, ShieldAlert, CheckCircle2, AlertCircle, Globe } from 'lucide-react';
+import { Plus, Trash2, FileText, ChevronLeft, ShieldAlert, AlertCircle, Globe } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useNotify } from '@/components/ui/Notification';

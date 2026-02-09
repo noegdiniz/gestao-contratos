@@ -9,6 +9,7 @@ export interface Contrato {
     dtFim: string;
     categoriaId?: number;
     categoriaNome?: string;
+    status: string;
 }
 
 export interface PaginatedResponse<T> {

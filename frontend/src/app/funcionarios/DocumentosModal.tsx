@@ -1,10 +1,10 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { funcionarioService, AnexoFuncionario, DocumentoExigidoFuncionario } from '@/services/funcionarioService';
+import { funcionarioService, AnexoFuncionario } from '@/services/funcionarioService';
 import { configuracaoService } from '@/services/configuracaoService';
 import api from '@/lib/api';
-import { X, FileText, CheckCircle, XCircle, Clock, Download, Upload, Check, AlertCircle, ShieldCheck, Calendar, UserCheck, Timer, Printer } from 'lucide-react';
+import { X, FileText, CheckCircle, XCircle, Clock, Download, Upload, Check, AlertCircle, ShieldCheck, Calendar, UserCheck, Printer } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNotify } from '@/components/ui/Notification';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -95,7 +95,7 @@ function HistoryModal({ tipo, anexoId, onClose }: HistoryModalProps) {
                                             {item.obs && (
                                                 <div className="mt-2 p-3 bg-white rounded-xl border border-gray-100 text-xs text-gray-600 font-medium italic relative">
                                                     <span className="absolute -left-1 top-2 w-0.5 h-4 bg-indigo-200"></span>
-                                                    "{item.obs}"
+                                                    &quot;{item.obs}&quot;
                                                 </div>
                                             )}
                                         </div>
@@ -132,7 +132,7 @@ export default function DocumentosModal({ funcionario, onClose, isCompany }: Pro
     const [obs, setObs] = useState('');
 
     // Approval Card States
-    const [dataAso, setDataAso] = useState('');
+    const [dataAso] = useState('');
     const [prazoAso, setPrazoAso] = useState(365);
     const [prazoIntegracao, setPrazoIntegracao] = useState(365);
     const [confirmModal, setConfirmModal] = useState({
@@ -250,7 +250,7 @@ export default function DocumentosModal({ funcionario, onClose, isCompany }: Pro
             a.click();
             window.URL.revokeObjectURL(url);
             notify('success', 'Download Iniciado', 'O relatório histórico foi gerado.');
-        } catch (error) {
+        } catch {
             notify('error', 'Erro no Download', 'Não foi possível gerar o relatório.');
         }
     };

@@ -15,7 +15,6 @@ import {
     FolderTree,
     ShieldCheck,
     ClipboardList,
-    LayoutGrid,
     ChevronDown,
     ChevronRight,
     PieChart

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { contratoService, Contrato } from '@/services/contratoService';
+import { contratoService, Contrato, PaginatedResponse } from '@/services/contratoService';
 import { empresaService } from '@/services/empresaService';
 import { configService } from '@/services/configService';
 import { Plus, Search, FileText, Calendar, Building2, Edit2, Trash2, X, Tags } from 'lucide-react';
@@ -27,10 +27,10 @@ export default function ContratosPage() {
         status: 'ATIVO'
     });
 
-    const { data: contractsData, isLoading } = useQuery({
+    const { data: contractsData, isLoading } = useQuery<PaginatedResponse<Contrato>>({
         queryKey: ['contratos', page, limit],
         queryFn: () => contratoService.getAll(page, limit),
-        keepPreviousData: true
+        placeholderData: (previousData: PaginatedResponse<Contrato> | undefined) => previousData
     });
 
     const contracts = contractsData?.data || [];
@@ -120,7 +120,7 @@ export default function ContratosPage() {
         }
     };
 
-    const filteredContracts = contracts?.filter(c =>
+    const filteredContracts = contracts?.filter((c: Contrato) =>
         c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.empresaNome.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -156,10 +156,10 @@ export default function ContratosPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
+                    Array.from({ length: 3 }).map((_, i: number) => (
                         <div key={i} className="bg-white rounded-3xl p-6 h-48 animate-pulse border border-gray-100"></div>
                     ))
-                ) : filteredContracts?.map((contract) => (
+                ) : filteredContracts?.map((contract: Contrato) => (
                     <div key={contract.id} className="bg-white rounded-3xl p-6 border border-gray-100 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group overflow-hidden relative text-left">
                         <div className="absolute top-0 right-0 p-4 flex space-x-2">
                             <PermissionGuard permission="canEditContratos">

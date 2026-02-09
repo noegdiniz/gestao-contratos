@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { empresaService, Empresa } from '@/services/empresaService';
-import { Plus, Search, Building2, Edit2, Trash2, Key, X } from 'lucide-react';
+import { empresaService, Empresa, PaginatedResponse } from '@/services/empresaService';
+import { Plus, Search, Building2, Edit2, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { PermissionGuard } from '@/components/ui/PermissionGuard';
 import { Pagination } from '@/components/ui/Pagination';
@@ -16,10 +16,10 @@ export default function EmpresasPage() {
     const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
     const [formData, setFormData] = useState({ nome: '', loginName: '', cnpj: '', departamento: '', chave: '', status: 'ATIVA' });
 
-    const { data: companiesData, isLoading } = useQuery({
+    const { data: companiesData, isLoading } = useQuery<PaginatedResponse<Empresa>>({
         queryKey: ['empresas', page, limit],
         queryFn: () => empresaService.getAll(page, limit),
-        keepPreviousData: true
+        placeholderData: (previousData: PaginatedResponse<Empresa> | undefined) => previousData
     });
 
     const companies = companiesData?.data || [];
@@ -86,7 +86,7 @@ export default function EmpresasPage() {
         }
     };
 
-    const filteredCompanies = companies?.filter(c =>
+    const filteredCompanies = companies?.filter((c: Empresa) =>
         c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.cnpj.includes(searchTerm)
     );
@@ -141,7 +141,7 @@ export default function EmpresasPage() {
                                     <td colSpan={5} className="py-8 px-6"><div className="h-4 bg-gray-100 rounded w-full"></div></td>
                                 </tr>
                             ))
-                        ) : filteredCompanies?.map((company) => (
+                        ) : filteredCompanies?.map((company: Empresa) => (
                             <tr key={company.id} className="hover:bg-gray-50/50 transition-colors group">
                                 <td className="py-5 px-6">
                                     <div className="flex items-center space-x-3">

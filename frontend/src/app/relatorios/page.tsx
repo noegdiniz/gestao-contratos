@@ -11,7 +11,7 @@ import {
     X,
     Loader2,
     LayoutGrid,
-    ShieldCheck,
+    ShieldAlert,
     ExternalLink,
     Search,
     GripVertical,
@@ -19,7 +19,6 @@ import {
     Trash2,
     Database,
     Table as TableIcon,
-    PieChart,
     Save,
     FolderOpen,
     Edit2,
@@ -41,9 +40,7 @@ import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
     useSortable,
-    horizontalListSortingStrategy,
     rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -295,7 +292,6 @@ export default function RelatoriosPage() {
     // Snapshot States
     const [isSaveSnapshotOpen, setIsSaveSnapshotOpen] = useState(false);
     const [snapshotName, setSnapshotName] = useState('');
-    const [editingSnapshotId, setEditingSnapshotId] = useState<number | null>(null);
 
     // Snapshots Query
     const { data: snapshots = [] } = useQuery({
@@ -321,7 +317,6 @@ export default function RelatoriosPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cubo-snapshots'] });
             notify('success', 'Snapshot Atualizado', 'A configuração foi atualizada!');
-            setEditingSnapshotId(null);
             setSnapshotName('');
         },
         onError: () => notify('error', 'Erro', 'Não foi possível atualizar o snapshot.')
@@ -475,8 +470,8 @@ export default function RelatoriosPage() {
             document.body.appendChild(link);
             link.click();
             link.remove();
-        } catch (error: any) {
-            alert('Erro ao gerar PDF.');
+        } catch {
+            notify('error', 'Erro no PDF', 'Não foi possível gerar o relatório PDF.');
         }
     };
 
@@ -651,7 +646,15 @@ export default function RelatoriosPage() {
 
                                 <div className="space-y-2 max-h-48 overflow-y-auto">
                                     {snapshots.length === 0 ? (
-                                        <p className="text-xs text-gray-400 italic text-center py-4">Nenhuma configuração salva.</p>
+                                        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                                            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+                                                <ShieldAlert className="text-amber-500" size={32} />
+                                            </div>
+                                            <h3 className="text-gray-900 font-bold">Nenhum snapshot encontrado</h3>
+                                            <p className="text-gray-500 text-sm mt-1 max-w-[240px]">
+                                                Você ainda não salvou nenhuma configuração de colunas para este relatório.
+                                            </p>
+                                        </div>
                                     ) : snapshots.map((snap: any) => (
                                         <div key={snap.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl group hover:bg-gray-100 transition-all">
                                             <div className="flex-1 min-w-0">
@@ -932,7 +935,7 @@ function IntegrationFilterModal({ onClose, onGenerate }: FilterModalProps) {
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
                         >
                             <option value="">Todas as Prestadoras</option>
-                            {companies?.map((c: any) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                            {companies?.data?.map((c: any) => <option key={c.id} value={c.id}>{c.nome}</option>)}
                         </select>
                     </div>
 

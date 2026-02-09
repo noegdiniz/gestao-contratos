@@ -2,8 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService, User } from '@/services/userService';
-import { profileService } from '@/services/profileService';
-import { Users, Plus, Search, Mail, Shield, Trash2, X, Edit2 } from 'lucide-react';
+import { Plus, Search, Mail, Trash2, X, Edit2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNotify } from '@/components/ui/Notification';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';

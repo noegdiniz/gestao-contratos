@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configService } from '@/services/configService';
-import { Settings2, Plus, Zap, Trash2, X } from 'lucide-react';
+import { Plus, Zap, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ProcessosPage() {

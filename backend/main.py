@@ -1884,10 +1884,8 @@ def aprovar_funcionario(func_id: int, db: Session = Depends(get_db), current_use
     
     if status_docs["is_ready"]:
         hist_status = "APROVADO"
-    elif hist_status != "APROVADO (COM DOCUMENTAÇÃO PENDENTE)":
-        hist_status = "APROVADO (COM DOCUMENTAÇÃO PENDENTE)"
     else:
-        return HTTPException(status_code=400, detail="Funcionario já foi aprovado")
+        hist_status = "APROVADO (COM DOCUMENTAÇÃO PENDENTE)"
         
     # Log the action (Sendo o novo Source of Truth)
     status_entry = models.StatusFuncionario(
@@ -1904,6 +1902,49 @@ def aprovar_funcionario(func_id: int, db: Session = Depends(get_db), current_use
     
     # Hidrata objeto de retorno para o frontend
     func.statusIntegracao = hist_status
+    func.integracaoAprovadaManualmente = True
+    
+    return func
+
+@app.post("/funcionarios/{func_id}/aprovar-manual")
+def aprovar_manual_funcionario(
+    func_id: int, 
+    request: AprovarIntegracaoManualRequest, 
+    db: Session = Depends(get_db), 
+    current_user: dict = Depends(check_integration_approver)
+):
+    func = db.query(models.Funcionario).filter(models.Funcionario.id == func_id).first()
+    if not func:
+        raise HTTPException(status_code=404, detail="Funcionario not found")
+        
+    from datetime import timedelta
+    
+    # Calcula datas de validade baseadas nos inputs manuais
+    data_validade_aso = request.dataAso + timedelta(days=request.prazoAsoDias)
+    # Para a integração, consideramos validade a partir de hoje (data da aprovação manual)
+    data_validade_integracao = datetime.now() + timedelta(days=request.prazoIntegracaoDias)
+
+    # Log the action (Sendo o novo Source of Truth)
+    status_entry = models.StatusFuncionario(
+        funcionarioId=func.id,
+        funcionarioNome=func.nome,
+        statusIntegracao="APROVADO",
+        data=datetime.now(),
+        tipo="Aprovação Inicial",
+        contratoId=func.contratoId,
+        # Dados manuais
+        dataAso=request.dataAso,
+        prazoAsoDias=request.prazoAsoDias,
+        prazoIntegracaoDias=request.prazoIntegracaoDias,
+        dataValidadeAso=data_validade_aso,
+        dataValidadeIntegracao=data_validade_integracao
+    )
+    db.add(status_entry)
+    db.commit()
+    db.refresh(func)
+    
+    # Hidrata objeto para o frontend
+    func.statusIntegracao = "APROVADO"
     func.integracaoAprovadaManualmente = True
     
     return func

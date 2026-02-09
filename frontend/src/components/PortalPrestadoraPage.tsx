@@ -5,9 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { funcionarioService } from '@/services/funcionarioService';
 import {
     Users,
-    FileWarning,
-    CalendarCheck,
-    TrendingUp,
     CheckCircle2,
     Clock,
     AlertTriangle,

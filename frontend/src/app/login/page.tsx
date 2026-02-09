@@ -46,7 +46,7 @@ export default function LoginPage() {
             const response = await api.post('/token', { identifier, chaveAcesso });
             localStorage.setItem('token', response.data.access_token);
             router.push('/');
-        } catch (err) {
+        } catch {
             setError('Falha na autenticação. Verifique o nome/login da empresa e a chave.');
         } finally {
             setLoading(false);

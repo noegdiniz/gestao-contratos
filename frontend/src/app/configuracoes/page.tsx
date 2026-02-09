@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configuracaoService, Configuracao } from '@/services/configuracaoService';
-import { Settings, Save, Clock, Calendar, Building2, Globe, ImageIcon, Check, Upload } from 'lucide-react';
+import { Settings, Save, Clock, Calendar, Building2, Globe, ImageIcon, Upload } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNotify } from '@/components/ui/Notification';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -152,7 +152,7 @@ export default function ConfiguracoesPage() {
                                 onChange={e => setForm({ ...form, diasParaConfirmarPresenca: parseInt(e.target.value) })}
                                 className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                             />
-                            <p className="text-[10px] text-gray-400">Após este prazo, agendamentos sem confirmação viram "FALTOU"</p>
+                            <p className="text-[10px] text-gray-400">Após este prazo, agendamentos sem confirmação viram &quot;FALTOU&quot;</p>
                         </div>
                     </div>
                 </section>

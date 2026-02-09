@@ -1,14 +1,13 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { funcionarioService, Funcionario } from '@/services/funcionarioService';
+import { funcionarioService, Funcionario, PaginatedResponse } from '@/services/funcionarioService';
 import { configService } from '@/services/configService';
 import { configuracaoService } from '@/services/configuracaoService';
 import { contratoService } from '@/services/contratoService';
 import { Search, UserCircle, ShieldCheck, FileCheck, Building2, Edit2, Trash2, Plus, X, CalendarCheck, Clock, History, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import api from '@/lib/api';
-import Link from 'next/link';
 import { PermissionGuard } from '@/components/ui/PermissionGuard';
 import DocumentosModal from './DocumentosModal';
 import { useNotify } from '@/components/ui/Notification';
@@ -58,10 +57,10 @@ export default function FuncionariosPage() {
         setConfirmModal({ isOpen: true, title, message, onConfirm, type });
     };
 
-    const { data: employeesData, isLoading } = useQuery({
+    const { data: employeesData, isLoading } = useQuery<PaginatedResponse<Funcionario>>({
         queryKey: ['funcionarios', page, limit],
         queryFn: () => funcionarioService.getAll(page, limit),
-        keepPreviousData: true
+        placeholderData: (previousData: PaginatedResponse<Funcionario> | undefined) => previousData
     });
 
     const employees = employeesData?.data || [];
@@ -197,17 +196,7 @@ export default function FuncionariosPage() {
         }
     });
 
-    const confirmPresenceMutation = useMutation({
-        mutationFn: (id: number) => funcionarioService.confirmarPresenca(id),
-        onSuccess: (data: any) => {
-            queryClient.invalidateQueries({ queryKey: ['funcionarios'] });
-            notify('success', 'Presença Confirmada', `Presença confirmada para ${data.nome || 'o colaborador'}. Status: REALIZADA.`);
-        },
-        onError: (error: any) => {
-            const detail = error.response?.data?.detail || 'Não foi possível confirmar a presença.';
-            notify('error', 'Erro na Confirmação', detail);
-        }
-    });
+
 
 
 
@@ -267,7 +256,7 @@ export default function FuncionariosPage() {
         setIsHistoryOpen(true);
     };
 
-    const filteredEmployees = employees?.filter(emp => {
+    const filteredEmployees = employees?.filter((emp: Funcionario) => {
         const matchesSearch = emp.nome.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCompany = companyFilter === '' || emp.empresaId?.toString() === companyFilter;
         const matchesContract = contractFilter === '' || emp.contratoId?.toString() === contractFilter;
@@ -778,7 +767,7 @@ export default function FuncionariosPage() {
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
                                 >
                                     <option value="">Selecione o contrato...</option>
-                                    {contratos?.map(c => (
+                                    {contratos?.data?.map(c => (
                                         <option key={c.id} value={c.id}>{c.nome} ({c.empresaNome})</option>
                                     ))}
                                 </select>
