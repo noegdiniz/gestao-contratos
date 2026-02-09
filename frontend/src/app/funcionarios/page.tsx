@@ -576,7 +576,7 @@ export default function FuncionariosPage() {
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-sm"
                                     >
                                         <option value="">Selecione...</option>
-                                        {contratos?.map(c => (
+                                        {contratos?.data?.map(c => (
                                             <option key={c.id} value={c.id}>{c.nome}</option>
                                         ))}
                                     </select>

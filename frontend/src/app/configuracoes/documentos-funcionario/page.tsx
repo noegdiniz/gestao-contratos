@@ -113,7 +113,7 @@ export default function DocumentosFuncionarioConfigPage() {
                                     onChange={(e) => setSelectedContratoId(e.target.value === '' ? '' : Number(e.target.value))}
                                 >
                                     <option value="">Global (Todos os Trabalhadores)</option>
-                                    {contratos?.map(c => (
+                                    {contratos?.data?.map(c => (
                                         <option key={c.id} value={c.id}>Contrato: {c.nome}</option>
                                     ))}
                                 </select>
@@ -180,7 +180,7 @@ export default function DocumentosFuncionarioConfigPage() {
                             {contractDocs.length === 0 ? (
                                 <div className="p-8 text-center text-gray-400 text-sm italic">Nenhum documento específico por contrato.</div>
                             ) : contractDocs.map((doc: any) => {
-                                const contrato = contratos?.find(c => c.id === doc.contratoId);
+                                const contrato = contratos?.data?.find(c => c.id === doc.contratoId);
                                 return (
                                     <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors group">
                                         <div className="flex items-center space-x-3 text-left">
