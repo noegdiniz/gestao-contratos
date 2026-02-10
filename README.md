@@ -71,6 +71,7 @@ O projeto está totalmente dockerizado para facilitar o deploy e desenvolvimento
     ```env
     JWT_SECRET=sua_chave_secreta
     CORS_ORIGINS=http://localhost:3000
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID=seu_client_id.apps.googleusercontent.com
     POSTGRES_USER=user
     POSTGRES_PASSWORD=password
     POSTGRES_DB=gestao_contratos
