@@ -2,6 +2,7 @@ import os
 import base64
 import io
 from sqlalchemy.orm import Session
+from loguru import logger
 import models
 from fpdf import FPDF
 from datetime import datetime
@@ -15,7 +16,7 @@ class GoogleDriveService:
         # 1. Get credentials from DB or Env
         # 2. Authenticate
         # 3. Upload to folder defined in 'Cubos'
-        print(f"Uploading {filename} to Google Drive for Doc ID {documento_id}")
+        logger.info(f"Uploading {filename} to Google Drive for Doc ID {documento_id}")
         return {"success": True, "file_id": "google-drive-id-placeholder"}
 
 class PDFReport(FPDF):
@@ -197,7 +198,7 @@ class ReportingService:
                 pdf.image(temp_logo_path, x=10, y=8, h=15)
                 os.unlink(temp_logo_path)
             except Exception as e:
-                print(f"Error loading logo in PDF: {e}")
+                logger.error(f"Error loading logo in PDF: {e}")
 
         pdf.set_y(25) # Adjust based on logo presence/size
         pdf.set_font('helvetica', 'B', 16)
@@ -323,7 +324,7 @@ class ReportingService:
                 pdf.image(temp_logo_path, x=10, y=8, h=15)
                 os.unlink(temp_logo_path)
             except Exception as e:
-                print(f"Error loading logo: {e}")
+                logger.error(f"Error loading logo: {e}")
 
         pdf.set_y(25)
         pdf.set_font('helvetica', 'B', 16)

@@ -288,11 +288,13 @@ class UnidadeIntegracao(Base):
 class Log(Base):
     __tablename__ = "logs"
     id = Column(Integer, primary_key=True, index=True)
-    menu = Column(String, nullable=False)
-    userName = Column(String, nullable=False)
-    userPerfil = Column(String, nullable=False)
-    action = Column(String, nullable=False)
+    level = Column(String, default="INFO")
+    menu = Column(String, nullable=True)
+    userName = Column(String, nullable=True)
+    userPerfil = Column(String, nullable=True)
+    action = Column(String, nullable=True)
     info = Column(Text, nullable=False)
+    traceback = Column(Text, nullable=True)
     date = Column(DateTime(timezone=True), server_default=func.now())
 
 class Cubo(Base):

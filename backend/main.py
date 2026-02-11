@@ -17,10 +17,50 @@ import re
 from pydantic import field_validator
 from typing import Any
 import json
+import time
+from uuid import uuid4
+from logging_config import setup_logging
+from loguru import logger
+
+# Initialize Logging System
+setup_logging()
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Gestão de Contratos API")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    request_id = str(uuid4())
+    start_time = time.time()
+    
+    # Try to identify user if authenticated (this might need to happen after some auth processing)
+    # For now, we log the basics
+    path = request.url.path
+    method = request.method
+    client_host = request.client.host if request.client else "unknown"
+    
+    logger.info(f"Incoming request: {method} {path} | ID: {request_id} | Client: {client_host}")
+
+    try:
+        response = await call_next(request)
+        process_time = (time.time() - start_time) * 1000
+        formatted_process_time = f"{process_time:.2f}ms"
+        
+        status_code = response.status_code
+        log_msg = f"Completed request: {method} {path} | Status: {status_code} | Time: {formatted_process_time}"
+        
+        if status_code >= 400:
+            logger.error(log_msg)
+        else:
+            logger.info(log_msg)
+            
+        return response
+        
+    except Exception as e:
+        process_time = (time.time() - start_time) * 1000
+        logger.exception(f"Request failed: {method} {path} | Error: {str(e)} | Time: {process_time:.2f}ms")
+        raise e
 
 app.add_middleware(
     CORSMiddleware,
